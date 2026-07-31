@@ -1,0 +1,3 @@
+export const STATEMENT_REPOSITORY = Symbol('STATEMENT_REPOSITORY');
+
+export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;

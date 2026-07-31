@@ -17,9 +17,3 @@ export class AccountEntity {
   createdAt: Date;
   updatedAt: Date;
 }
-
-export function calculateCurrentBalance(initialBalance: Money): Money {
-  // The Transactions module does not exist yet, so there are no movements to
-  // apply on top of the initial balance (Decision 004).
-  return initialBalance;
-}

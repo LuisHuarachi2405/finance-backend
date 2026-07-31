@@ -29,8 +29,12 @@ model User {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  accounts   Account[]
-  categories Category[]
+  accounts              Account[]
+  categories            Category[]
+  transactions          Transaction[]
+  budgets               Budget[]
+  statements            Statement[]
+  reconciliationMatches ReconciliationMatch[]
 }
 
 enum AccountType {
@@ -52,12 +56,17 @@ model Account {
   accountType    AccountType
   currency       String
   initialBalance Decimal       @db.Decimal(14, 2)
+  currentBalance Decimal       @db.Decimal(14, 2)
   status         AccountStatus @default(ACTIVE)
   notes          String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+
+  transactionsAsSource      Transaction[] @relation("SourceAccountTransactions")
+  transactionsAsDestination Transaction[] @relation("DestinationAccountTransactions")
+  statements                Statement[]
 
   @@index([userId])
 }
@@ -81,6 +90,161 @@ model Category {
 
   user User @relation(fields: [userId], references: [id])
 
+  transactions Transaction[]
+  budgets      Budget[]
+
   @@unique([userId, name, type])
   @@index([userId])
+}
+
+enum TransactionType {
+  EXPENSE
+  INCOME
+  TRANSFER
+}
+
+enum TransactionStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  userId          String
+  accountId       String
+  toAccountId     String?
+  categoryId      String?
+  type            TransactionType
+  amount          Decimal           @db.Decimal(14, 2)
+  currency        String
+  transactionDate DateTime
+  notes           String?
+  status          TransactionStatus @default(ACTIVE)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id])
+  account   Account   @relation("SourceAccountTransactions", fields: [accountId], references: [id])
+  toAccount Account?  @relation("DestinationAccountTransactions", fields: [toAccountId], references: [id])
+  category  Category? @relation(fields: [categoryId], references: [id])
+
+  reconciliationMatches ReconciliationMatch[]
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([toAccountId])
+  @@index([categoryId])
+}
+
+enum BudgetPeriod {
+  WEEKLY
+  MONTHLY
+}
+
+model Budget {
+  id         String       @id @default(uuid())
+  userId     String
+  categoryId String
+  name       String
+  amount     Decimal      @db.Decimal(14, 2)
+  currency   String
+  period     BudgetPeriod
+  startDate  DateTime
+  endDate    DateTime
+  active     Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+enum ImportProvider {
+  YAPE
+}
+
+enum ImportFileFormat {
+  CSV
+  XLSX
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSED
+  FAILED
+}
+
+enum ImportReconciliationStatus {
+  UNRECONCILED
+  RECONCILED
+}
+
+model Statement {
+  id               String           @id @default(uuid())
+  userId           String
+  accountId        String
+  provider         ImportProvider
+  fileFormat       ImportFileFormat
+  fileName         String
+  fileHash         String
+  status           ImportStatus     @default(PENDING)
+  transactionCount Int              @default(0)
+  errorMessage     String?
+  importedAt       DateTime         @default(now())
+
+  user                 User                  @relation(fields: [userId], references: [id])
+  account              Account               @relation(fields: [accountId], references: [id])
+  importedTransactions ImportedTransaction[]
+
+  @@unique([userId, accountId, fileHash])
+  @@index([userId])
+  @@index([accountId])
+}
+
+model ImportedTransaction {
+  id                   String                     @id @default(uuid())
+  statementId          String
+  externalId           String?
+  transactionDate      DateTime
+  description          String
+  amount               Decimal                    @db.Decimal(14, 2)
+  currency             String
+  reference            String?
+  rawData              Json
+  reconciliationStatus ImportReconciliationStatus @default(UNRECONCILED)
+  createdAt            DateTime                   @default(now())
+
+  statement Statement @relation(fields: [statementId], references: [id])
+
+  reconciliationMatches ReconciliationMatch[]
+
+  @@index([statementId])
+}
+
+enum ReconciliationStatus {
+  MATCHED
+  UNMATCHED
+  IGNORED
+}
+
+model ReconciliationMatch {
+  id                    String               @id @default(uuid())
+  userId                String
+  transactionId         String?
+  importedTransactionId String
+  matchScore            Float?
+  status                ReconciliationStatus
+  reviewedAt            DateTime
+  createdAt             DateTime             @default(now())
+
+  user                User                @relation(fields: [userId], references: [id])
+  transaction         Transaction?        @relation(fields: [transactionId], references: [id])
+  importedTransaction ImportedTransaction @relation(fields: [importedTransactionId], references: [id])
+
+  @@index([userId])
+  @@index([transactionId])
+  @@index([importedTransactionId])
 }

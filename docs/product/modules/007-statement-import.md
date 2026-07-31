@@ -2,7 +2,7 @@
 
 Module: Statement Import
 
-Version: 1.0
+Version: 2.0
 
 Status: Planned
 
@@ -10,13 +10,11 @@ Status: Planned
 
 # Purpose
 
-The Statement Import module allows users to import financial statements from banks and digital wallets.
+The Statement Import module allows users to import financial statements exported from banks and digital wallets.
 
-Imported transactions become external financial records that can later be reconciled with manually created transactions.
+Its responsibility is to parse provider-specific files and transform them into a normalized internal representation.
 
-This module is responsible only for importing and parsing files.
-
-It must never perform reconciliation.
+The module does not perform reconciliation.
 
 ---
 
@@ -24,11 +22,12 @@ It must never perform reconciliation.
 
 Allow users to:
 
-- Import bank statements.
-- Import digital wallet statements.
-- Validate imported files.
-- Store imported transactions.
-- Review imported data before reconciliation.
+- Import financial statements.
+- Validate provider files.
+- Parse provider-specific formats.
+- Normalize imported transactions.
+- Store imported statements.
+- Review imported transactions before reconciliation.
 
 ---
 
@@ -37,49 +36,68 @@ Allow users to:
 Included:
 
 - CSV import
-- Excel import
-- File validation
-- Import history
+- XLSX import
+- Provider validation
 - Import preview
-- Import status
+- Import history
+- Duplicate import detection
 
 Not Included:
 
-- Automatic synchronization
-- Open Banking
-- OCR
 - PDF parsing
-- Transaction matching
+- OCR
+- Open Banking
+- Automatic synchronization
+- Reconciliation
+
+---
+
+# Architecture
+
+The module should follow a Strategy Pattern.
+
+Each financial provider implements its own parser.
+
+Example:
+
+Statement Parser
+
+├── Yape Parser
+├── BCP CSV Parser
+├── BBVA Parser (Future)
+├── Interbank Parser (Future)
+
+The import workflow must never depend on a specific provider.
+
+New providers should be added without modifying existing implementations.
 
 ---
 
 # Supported Providers
 
-Initial providers:
+Initial Version
 
-- BCP
 - Yape
 
-Future providers:
+Future Versions
 
+- BCP
 - Interbank
 - BBVA
 - Scotiabank
 - Plin
 - PayPal
 
-The architecture should allow adding new providers without modifying existing implementations.
-
 ---
 
-# Supported File Formats
+# Supported Formats
 
-Initial support:
+Initial Version
 
 - CSV
 - XLSX
 
-Future:
+Future Versions
 
 - PDF
 - OFX
@@ -93,62 +111,125 @@ The import process should follow these steps:
 
 1. Upload file.
 2. Detect provider.
-3. Validate format.
-4. Parse transactions.
-5. Validate parsed data.
-6. Store imported statement.
-7. Store imported transactions.
-8. Notify completion.
+3. Validate file format.
+4. Select provider parser.
+5. Parse transactions.
+6. Normalize transactions.
+7. Validate normalized data.
+8. Store imported statement.
+9. Store imported transactions.
+10. Notify completion.
 
 ---
 
-# Suggested Fields
+# Parser Interface
 
-Statement
+Every provider parser should expose the same contract.
+
+Responsibilities:
+
+- Validate file structure.
+- Read rows.
+- Transform provider fields.
+- Return normalized transactions.
+
+The parser must not access the database.
+
+The parser must not perform reconciliation.
+
+---
+
+# Normalized Transaction
+
+Every imported transaction should be converted into the same internal model.
+
+Suggested fields:
 
 - Provider
-- File Name
-- Import Date
-- Imported By
-- Status
-- Number of Transactions
-
-Imported Transaction
-
-- External Id
-- Date
-- Description
+- Transaction Date
 - Amount
 - Currency
-- Balance (optional)
-- Account
-- Provider Reference
+- Description
+- Reference
+- External Identifier
+- Raw Data
+
+Different providers may contain additional information.
+
+Those values should be preserved inside Raw Data.
+
+---
+
+# Statement
+
+Suggested fields:
+
+- User
+- Provider
+- Original Filename
+- File Hash
+- Imported At
+- Import Status
+- Total Transactions
+
+---
+
+# Imported Transaction
+
+Suggested fields:
+
+- Statement
+- Transaction Date
+- Amount
+- Currency
+- Description
+- Reference
+- External Id
+- Raw Data
+- Reconciliation Status
+
+---
+
+# Duplicate Detection
+
+The system should attempt to detect duplicate imports.
+
+Possible criteria:
+
+- File hash
+- Provider
+- Import date
+- Number of transactions
+
+Duplicate detection should reduce accidental multiple imports.
 
 ---
 
 # Validation Rules
 
-Imported file:
+Uploaded file:
 
-- Must have a supported extension.
-- Must not be empty.
-- Must contain recognizable columns.
+- Supported extension
+- Non-empty
+- Valid provider format
 
 Transactions:
 
-- Amount is required.
 - Date is required.
+- Amount is required.
 - Description is required.
 
 ---
 
 # Business Rules
 
-Importing data must never modify existing manual transactions.
+Importing a statement must never modify manual transactions.
 
-Each imported statement remains immutable after processing.
+Imported transactions remain immutable.
 
-Importing the same file multiple times should be detected whenever possible.
+Normalization must preserve provider-specific information.
+
+Reconciliation is performed by another module.
 
 ---
 
@@ -158,8 +239,10 @@ Typical operations:
 
 - Upload statement
 - Validate statement
-- Get import history
-- Get imported transactions
+- Preview import
+- Confirm import
+- List imported statements
+- List imported transactions
 
 ---
 
@@ -167,19 +250,20 @@ Typical operations:
 
 Users may only import statements into their own accounts.
 
-Imported files should never be accessible by other users.
+Imported files must never be accessible by other users.
 
 ---
 
 # Future Enhancements
 
-Future versions may include:
+Possible future improvements:
 
-- Direct bank integrations
+- PDF parsers
+- OFX support
+- Open Banking
 - Scheduled imports
 - Automatic synchronization
-- OCR receipts
-- AI transaction normalization
+- AI transaction classification
 
 ---
 
@@ -187,7 +271,9 @@ Future versions may include:
 
 The module is complete when:
 
-- Supported files can be imported.
-- Transactions are parsed correctly.
+- Provider files can be validated.
+- Provider parsers normalize transactions correctly.
+- Imported statements are stored.
+- Imported transactions are stored.
 - Import history is available.
-- Imported transactions are stored independently from manual transactions.
+- Duplicate imports are detected.

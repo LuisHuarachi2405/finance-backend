@@ -12,7 +12,9 @@ export class PrismaAccountRepository implements AccountRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   create(data: CreateAccountInput): Promise<Account> {
-    return this.prisma.account.create({ data });
+    return this.prisma.account.create({
+      data: { ...data, currentBalance: data.initialBalance },
+    });
   }
 
   findById(id: string): Promise<Account | null> {

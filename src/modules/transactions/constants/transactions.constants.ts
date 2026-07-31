@@ -1,0 +1,3 @@
+export const TRANSACTION_REPOSITORY = Symbol('TRANSACTION_REPOSITORY');
+
+export const MAX_NOTES_LENGTH = 500;
