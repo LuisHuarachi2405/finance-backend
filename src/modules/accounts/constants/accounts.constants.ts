@@ -1,0 +1,5 @@
+export const ACCOUNT_REPOSITORY = Symbol('ACCOUNT_REPOSITORY');
+
+export const MAX_ACCOUNT_NAME_LENGTH = 100;
+export const MAX_INSTITUTION_LENGTH = 100;
+export const MAX_NOTES_LENGTH = 500;
