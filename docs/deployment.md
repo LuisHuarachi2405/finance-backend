@@ -67,8 +67,14 @@ Edit `.env.production` and replace every `change-me-*` placeholder:
 # 4. First deploy
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
 ```
+
+The `--env-file` flag is required — Docker Compose only auto-loads a file
+literally named `.env` for variable substitution (like `${POSTGRES_USER}` in
+`docker-compose.prod.yml`); without it, those variables resolve to blank and
+Postgres refuses to start ("superuser password is not specified"), even
+though `.env.production` itself is correctly filled in.
 
 This builds the API image, starts Postgres, runs `prisma migrate deploy`
 automatically (via the image's entrypoint) before the API starts, and brings
@@ -88,7 +94,7 @@ Once running, `https://api.luishuarachi.tech/docs` should serve Swagger.
 
 ```bash
 git pull
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose -f docker-compose.prod.yml --env-file .env.production up -d --build
 ```
 
 Migrations run automatically on every restart of the `api` service (safe to
