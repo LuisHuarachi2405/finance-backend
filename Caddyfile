@@ -2,12 +2,10 @@ api.luishuarachi.tech {
     reverse_proxy api:3000
 }
 
-# Once the frontend is deployed to this same VPS, add its site block here, e.g.:
-#
-# luishuarachi.tech, www.luishuarachi.tech {
-#     reverse_proxy frontend:<port>
-# }
-#
+luishuarachi.tech, www.luishuarachi.tech {
+    reverse_proxy frontend:80
+}
+
 # Caddy provisions and renews HTTPS certificates automatically via Let's
 # Encrypt for every domain listed above — no manual TLS setup needed, as long
 # as the domain's DNS A record points at this server before it starts.
