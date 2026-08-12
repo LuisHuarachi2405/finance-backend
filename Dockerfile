@@ -7,7 +7,7 @@ RUN corepack enable
 # bcrypt compiles a native addon on install; alpine needs these build tools for it.
 RUN apk add --no-cache python3 make g++
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
