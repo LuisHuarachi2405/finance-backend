@@ -1,14 +1,22 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { appConfig, databaseConfig, jwtConfig } from './config/configuration';
+import {
+  appConfig,
+  corsConfig,
+  databaseConfig,
+  jwtConfig,
+} from './config/configuration';
 import { validate } from './config/env.validation';
 import { AccountsModule } from './modules/accounts/accounts.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BudgetsModule } from './modules/budgets/budgets.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { FinancialGoalsModule } from './modules/financial-goals/financial-goals.module';
 import { FinancialHealthModule } from './modules/financial-health/financial-health.module';
 import { ReconciliationModule } from './modules/reconciliation/reconciliation.module';
+import { RecurringExpensesModule } from './modules/recurring-expenses/recurring-expenses.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { SpendingPlanModule } from './modules/spending-plan/spending-plan.module';
 import { StatementImportsModule } from './modules/statement-imports/statement-imports.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { UsersModule } from './modules/users/users.module';
@@ -19,7 +27,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ConfigModule.forRoot({
       isGlobal: true,
       validate,
-      load: [appConfig, databaseConfig, jwtConfig],
+      load: [appConfig, databaseConfig, jwtConfig, corsConfig],
     }),
     PrismaModule,
     UsersModule,
@@ -32,6 +40,9 @@ import { PrismaModule } from './prisma/prisma.module';
     StatementImportsModule,
     ReconciliationModule,
     FinancialHealthModule,
+    RecurringExpensesModule,
+    SpendingPlanModule,
+    FinancialGoalsModule,
   ],
 })
 export class AppModule {}

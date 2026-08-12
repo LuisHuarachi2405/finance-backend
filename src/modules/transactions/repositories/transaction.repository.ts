@@ -100,6 +100,23 @@ export class PrismaTransactionRepository implements TransactionRepository {
     });
   }
 
+  findByRecurringExpenseId(
+    userId: string,
+    recurringExpenseId: string,
+    dateFrom: Date,
+    dateTo: Date,
+  ): Promise<Transaction[]> {
+    return this.prisma.transaction.findMany({
+      where: {
+        userId,
+        recurringExpenseId,
+        status: TransactionStatus.ACTIVE,
+        transactionDate: { gte: dateFrom, lte: dateTo },
+      },
+      orderBy: { transactionDate: 'desc' },
+    });
+  }
+
   async sumAmount(userId: string, filter: SumAmountFilter): Promise<number> {
     const result = await this.prisma.transaction.aggregate({
       where: {

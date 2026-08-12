@@ -43,6 +43,7 @@ export class TransactionsService {
   async createTransaction(
     userId: string,
     dto: CreateTransactionDto,
+    recurringExpenseId?: string,
   ): Promise<Transaction> {
     const account = await this.accountsService.getAccount(
       userId,
@@ -68,6 +69,7 @@ export class TransactionsService {
         accountId: dto.accountId,
         toAccountId: dto.toAccountId,
         categoryId: dto.categoryId,
+        recurringExpenseId,
         type: dto.type,
         amount: dto.amount,
         currency: account.currency,
@@ -75,6 +77,20 @@ export class TransactionsService {
         notes: dto.notes,
       },
       adjustments,
+    );
+  }
+
+  findByRecurringExpenseId(
+    userId: string,
+    recurringExpenseId: string,
+    dateFrom: Date,
+    dateTo: Date,
+  ): Promise<Transaction[]> {
+    return this.transactionRepository.findByRecurringExpenseId(
+      userId,
+      recurringExpenseId,
+      dateFrom,
+      dateTo,
     );
   }
 

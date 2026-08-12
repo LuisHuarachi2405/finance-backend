@@ -41,6 +41,10 @@ class EnvironmentVariables {
 
   @IsString()
   JWT_REFRESH_EXPIRATION: string;
+
+  @IsOptional()
+  @IsString()
+  CORS_ORIGIN?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

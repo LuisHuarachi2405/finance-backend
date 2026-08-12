@@ -6,6 +6,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -14,6 +15,14 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  const corsOrigins = configService.get<string[]>('cors.origins') ?? [];
+  const isProduction =
+    configService.get<string>('app.nodeEnv') === 'production';
+
+  app.enableCors({
+    origin: corsOrigins.length > 0 ? corsOrigins : !isProduction,
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Finance Backend')
@@ -24,7 +33,6 @@ async function bootstrap() {
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, swaggerDocument);
 
-  const configService = app.get(ConfigService);
   const port = configService.get<number>('app.port') ?? 3000;
 
   await app.listen(port);

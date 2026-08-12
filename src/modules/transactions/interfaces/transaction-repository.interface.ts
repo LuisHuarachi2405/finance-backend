@@ -21,6 +21,7 @@ export interface CreateTransactionInput {
   accountId: string;
   toAccountId?: string | null;
   categoryId?: string | null;
+  recurringExpenseId?: string | null;
   type: TransactionType;
   amount: number;
   currency: string;
@@ -73,4 +74,10 @@ export interface TransactionRepository {
     adjustments: BalanceAdjustment[],
   ): Promise<Transaction>;
   sumAmount(userId: string, filter: SumAmountFilter): Promise<number>;
+  findByRecurringExpenseId(
+    userId: string,
+    recurringExpenseId: string,
+    dateFrom: Date,
+    dateTo: Date,
+  ): Promise<Transaction[]>;
 }

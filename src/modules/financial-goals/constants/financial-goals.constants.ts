@@ -1,0 +1,4 @@
+export const FINANCIAL_GOAL_REPOSITORY = Symbol('FINANCIAL_GOAL_REPOSITORY');
+
+export const MAX_NAME_LENGTH = 100;
+export const MAX_NOTES_LENGTH = 500;

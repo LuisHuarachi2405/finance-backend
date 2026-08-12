@@ -1,0 +1,5 @@
+export const RECURRING_EXPENSE_REPOSITORY = Symbol(
+  'RECURRING_EXPENSE_REPOSITORY',
+);
+
+export const MAX_NAME_LENGTH = 100;
