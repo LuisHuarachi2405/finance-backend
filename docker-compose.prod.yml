@@ -41,7 +41,12 @@ services:
 
 networks:
   internal:
+  # Shared with finance-frontend's docker-compose.prod.yml so Caddy can reverse_proxy
+  # to both services. Created once, out-of-band, on the VPS:
+  #   docker network create finance_web
   web:
+    external: true
+    name: finance_web
 
 volumes:
   postgres_data:
