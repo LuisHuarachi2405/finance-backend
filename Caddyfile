@@ -6,6 +6,10 @@ luishuarachi.tech, www.luishuarachi.tech {
     reverse_proxy frontend:80
 }
 
+rosmery.luishuarachi.tech {
+    reverse_proxy nuestra-historia:80
+}
+
 # Caddy provisions and renews HTTPS certificates automatically via Let's
 # Encrypt for every domain listed above — no manual TLS setup needed, as long
 # as the domain's DNS A record points at this server before it starts.
